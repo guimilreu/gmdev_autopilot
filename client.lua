@@ -16,7 +16,13 @@ CreateThread(function()
         local vehicle = GetVehiclePedIsIn(playerPed, false)
 
         if vehicle ~= 0 then
-            SendDataToUI("available", true)
+            local vehicleName = GetDisplayNameFromVehicleModel(GetEntityModel(vehicle))
+        
+            if tableContainsValue(Config.WHITELISTED_VEHICLES, vehicleName) then
+                SendDataToUI("available", true)
+            else
+                SendDataToUI("available", false)
+            end
         else
             SendDataToUI("available", false)
             if autopilotEnabled then
@@ -61,6 +67,12 @@ RegisterCommand("gmdev_autopilot:toggle", function(source, args)
     end
 
     local player = PlayerPedId()
+    local vehicle = GetVehiclePedIsIn(player)
+    local vehicleName = GetDisplayNameFromVehicleModel(GetEntityModel(vehicle))
+
+    if not tableContainsValue(Config.WHITELISTED_VEHICLES, vehicleName) then
+        return
+    end
 
     if autopilotEnabled then
         StopAutopilot("Piloto automático desativado.")
@@ -85,7 +97,7 @@ end, false)
 RegisterKeyMapping("gmdev_autopilot:increaseMaxSpeed", "Aumentar velocidade máxima do veículo.", "KEYBOARD", "PLUS")
 RegisterCommand("gmdev_autopilot:increaseMaxSpeed", function(source, args)
     if autopilotEnabled then
-        currentSpeed = math.max(currentSpeed + Config.SPEED_INCREMENT, Config.MIN_SPEED)
+        currentSpeed = math.max(math.min(currentSpeed + Config.SPEED_INCREMENT, Config.MAX_SPEED), Config.MIN_SPEED)
         SendDataToUI("maxSpeed", currentSpeed)
     end
 end)
@@ -93,7 +105,7 @@ end)
 RegisterKeyMapping("gmdev_autopilot:decreaseMaxSpeed", "Diminuir velocidade máxima do veículo.", "KEYBOARD", "MINUS")
 RegisterCommand("gmdev_autopilot:decreaseMaxSpeed", function(source, args)
     if autopilotEnabled then
-        currentSpeed = math.min(currentSpeed - Config.SPEED_INCREMENT, Config.MAX_SPEED)
+        currentSpeed = math.max(math.min(currentSpeed - Config.SPEED_INCREMENT, Config.MAX_SPEED), Config.MIN_SPEED)
         SendDataToUI("maxSpeed", currentSpeed)
     end
 end)
@@ -116,4 +128,13 @@ function PlayAudio(audioSource)
     SendNUIMessage({
         audio = audioSource
     })
+end
+
+function tableContainsValue(table, value)
+    for key, element in pairs(table) do
+        if element == value or element == string.lower(value) then
+            return true
+        end
+    end
+    return false
 end

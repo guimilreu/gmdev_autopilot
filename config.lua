@@ -1,5 +1,20 @@
 Config = {}
 
+--[[
+	PRINCIPAL	
+]]
+
+-- Lista com carros liberados para utilizar o piloto automático.
+Config.WHITELISTED_VEHICLES = {
+	"neon",
+	"voltic",
+	"cyclone",
+	"raiden"
+}
+
+--[[
+	VARIÁVEIS
+]]
 -- Velocidade máxima que o veículo pode atingir durante o piloto automático.
 Config.MAX_SPEED = 200.0
 
