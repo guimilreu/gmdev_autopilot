@@ -7,6 +7,14 @@ local autopilotEnabled = false
 local currentSpeed = Config.DEFAULT_SPEED
 local targetCoords
 
+function sendNotify(type, timeout, title, description)
+    if Config.USING_GMDEV_NOTIFY then
+        TriggerEvent("GMDev_Notify", type, title, description, timeout)
+    else
+        TriggerEvent("Notify", type, description, timeout)
+    end
+end
+
 -- Loop principal
 CreateThread(function()
     while true do
@@ -17,7 +25,7 @@ CreateThread(function()
 
         if vehicle ~= 0 then
             local vehicleName = GetDisplayNameFromVehicleModel(GetEntityModel(vehicle))
-        
+
             if tableContainsValue(Config.WHITELISTED_VEHICLES, vehicleName) then
                 SendDataToUI("available", true)
             else
@@ -27,7 +35,7 @@ CreateThread(function()
             SendDataToUI("available", false)
             if autopilotEnabled then
                 StopAutopilot()
-                TriggerEvent("Notify","negado","Você saiu do carro, piloto automático desativado.")
+                sendNotify("negado", 3000, "Piloto automático", "Você saiu do carro, piloto automático desativado.")
             end
         end
 
@@ -52,7 +60,7 @@ CreateThread(function()
                     0, true)
             else
                 StopAutopilot()
-                TriggerEvent("Notify","sucesso","Você chegou ao seu destino!")
+                sendNotify("sucesso", 3000, "Piloto automático", "Você chegou ao seu destino!")
             end
         end
 
@@ -75,7 +83,7 @@ RegisterCommand("gmdev_autopilot:toggle", function(source, args)
     end
 
     if autopilotEnabled then
-        StopAutopilot("Piloto automático desativado.")
+        StopAutopilot()
     else
         local blip = GetFirstBlipInfoId(8)
 
@@ -89,7 +97,7 @@ RegisterCommand("gmdev_autopilot:toggle", function(source, args)
             SendDataToUI("maxSpeed", currentSpeed)
             PlayAudio("https://github.com/guimilreu/gmdev_public_assets/raw/main/audio/gmdev_autopilot_activate.ogg")
         else
-            TriggerEvent("Notify", "negado", "Você deve marcar um ponto no mapa.")
+            sendNotify("negado", 3000, "Piloto automático", "Você deve marcar um ponto no mapa.")
         end
     end
 end, false)
