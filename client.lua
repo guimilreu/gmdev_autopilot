@@ -6,6 +6,7 @@ local TARGET_BLIP_ID = 8
 local autopilotEnabled = false
 local currentSpeed = Config.DEFAULT_SPEED
 local targetCoords
+local askedToDrive = false
 
 function sendNotify(type, timeout, title, description)
     if Config.USING_GMDEV_NOTIFY then
@@ -56,11 +57,17 @@ CreateThread(function()
 
             -- Verificar se está próximo do destino
             if distance > Config.STOP_DISTANCE then
+                askedToDrive = true
                 TaskVehicleDriveToCoord(playerPed, vehicle, targetCoords, currentSpeed / 3.6, 0, vehicle, DRIVING_STYLE,
                     0, true)
             else
                 StopAutopilot()
                 sendNotify("sucesso", 3000, "Piloto automático", "Você chegou ao seu destino!")
+            end
+        else
+            if askedToDrive then
+                askedToDrive = false
+                ClearPedTasks(PlayerPedId())
             end
         end
 
